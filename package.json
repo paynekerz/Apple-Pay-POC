@@ -1,0 +1,16 @@
+{
+  "name": "apple-pay-poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.6.1",
+    "@vercel/node": "^5.3.24",
+    "typescript": "^5.9.3"
+  }
+}
