@@ -101,7 +101,11 @@ if (applePaySupported()) {
 async function onApplePayClick() {
   try {
     // Initialize WalletJS Apple Pay instance with your key & domain (from env; injected by serverless echo)
-    const cfg = await (await fetch('/api/echo-verify')).json(); // { keyId, domain }
+    const cfg = await (await fetch('/api/echo-verify?cb=' + Date.now())).json();
+if (!cfg?.keyId || !cfg?.domain) {
+  throw new Error('Client config missing: keyId/domain not provided by /api/echo-verify');
+}
+
     const ap = new walletjs.ApplePay({
       key: cfg.keyId,              // APPLEPAY_KEY_ID (IQPro Settings→Apple Pay)
       domain: cfg.domain,          // your deployment domain
