@@ -102,25 +102,26 @@ async function onApplePayClick() {
   try {
     // Initialize WalletJS Apple Pay instance with your key & domain (from env; injected by serverless echo)
     const cfg = await (await fetch('/api/echo-verify?cb=' + Date.now())).json();
-if (!cfg?.keyId || !cfg?.domain) {
-  throw new Error('Client config missing: keyId/domain not provided by /api/echo-verify');
-}
+if (!cfg?.keyId || !cfg?.domain) throw new Error('Missing keyId/domain');
 
-    const ap = new walletjs.ApplePay({
-      key: cfg.keyId,              // APPLEPAY_KEY_ID (IQPro Settings→Apple Pay)
-      domain: cfg.domain,          // your deployment domain
-      payment: {
-        version: 3,
-        merchantCapabilities: ["supports3DS", "supportsCredit", "supportsDebit"],
-        supportedNetworks: ["visa", "masterCard", "discover"],
-        countryCode: "US",
-        merchantIdentifier: "merchant.example.sandbox" // placeholder; WalletJS handles simple-config path
-      },
-      details: {
-        total: { label: "Demo Order", amount: { currency: "USD", value: "1.23" } }
-      },
-      options: { requestShipping: false }
-    });
+const ap = new walletjs.ApplePay({
+  key: cfg.keyId,
+  domain: cfg.domain,           // required — this must match what you verified
+  // some WalletJS builds also accept domainName; you can include both to be safe:
+  domainName: cfg.domain,
+
+  payment: {
+    version: 3,
+    merchantCapabilities: ["supports3DS", "supportsCredit", "supportsDebit"],
+    supportedNetworks: ["visa", "masterCard", "discover"],
+    countryCode: "US"
+  },
+  details: {
+    total: { label: "Demo Order", amount: { currency: "USD", value: "1.23" } }
+  },
+  options: { requestShipping: false }
+});
+
 
     // This triggers the WalletJS Apple Pay flow or a mock where not supported and returns a token.
     const tokenResp = await ap.submit(); // yields { temporary_token: "..." } in the simple flow
