@@ -5,7 +5,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { type = 'authorize', amount = 123, apple_pay_temporary_token } = req.body || {};
+    const { type = 'sale', amount = 123, apple_pay_temporary_token } = req.body || {};
     if (!apple_pay_temporary_token) {
       return res.status(400).json({ error: 'Missing apple_pay_temporary_token' });
     }
