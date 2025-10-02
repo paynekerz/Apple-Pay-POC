@@ -12,7 +12,7 @@
   function init() {
     tokenizer = new Tokenizer({
       // TIP: PAYMENT_PROVIDER_URL -> app.basysiqpro.com
-      url: 'https://app.basysiqpro.com',
+      url: 'https://sandbox.basysiqpro.com',
       // publishable key (safe for browser)
       apikey: cfg.publicKey,
       container: '#container',
