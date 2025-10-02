@@ -1,108 +1,107 @@
 (async () => {
-  try {
-    console.log('[Tokenizer] Fetching config from /api/echo-verify...');
-    const cfg = await (await fetch('/api/echo-verify?cb=' + Date.now())).json();
+  // Pull public key + apple-pay config from your echo endpoint
+  const cfg = await (await fetch('/api/echo-verify?cb=' + Date.now())).json();
+  if (!cfg?.publicKey || !cfg?.keyId || !cfg?.domain) {
+    console.error('Missing Tokenizer config'); return;
+  }
 
-    if (!cfg?.publicKey || !cfg?.keyId || !cfg?.domain) {
-      console.error('[Tokenizer] Missing config from /api/echo-verify:', cfg);
-      return;
-    }
-    console.log('[Tokenizer] Config loaded:', cfg);
+  // Optional: read a visible total from your page; default $1.23
+  const amountStr = (document.querySelector('#total-amount')?.textContent || '1.23').trim();
 
-    const amountStr = (document.querySelector('#total-amount')?.textContent || '1.23').trim();
+  let tokenizer;
+  function init() {
+    tokenizer = new Tokenizer({
+      // TIP: PAYMENT_PROVIDER_URL -> app.basysiqpro.com
+      url: 'https://sandbox.basysiqpro.com',
+      // publishable key (safe for browser)
+      apikey: cfg.publicKey,
+      container: '#container',
 
-    let tokenizer;
-    function init() {
-      console.log('[Tokenizer] Initializing Tokenizer...');
-      tokenizer = new Tokenizer({
-        url: 'https://sandbox.basysiqpro.com',
-        apikey: cfg.publicKey,
-        container: '#container',
+      submission: function (response) {
+        console.log('Tokenizer submission response:', response);
 
-        submission: function (response) {
-          console.log('[Tokenizer] Submission callback triggered:', response);
+        // Show on-page
+        const out = document.getElementById('out');
+        if (out) out.textContent = 'Tokenizer submission:\n' + JSON.stringify(response, null, 2);
 
-          const out = document.getElementById('out');
-          if (out) {
-            out.textContent = 'Tokenizer submission:\n' + JSON.stringify(response, null, 2);
-          }
+        // If Tokenizer returns a temporary token, immediately simulate an authorization
+        if (response?.token) {
+          fetch('/api/transaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'authorize',
+              amount: Math.round(parseFloat(amountStr || '1.23') * 100),
+              apple_pay_temporary_token: response.temporary_token
+            })
+          })
+          .then(r => r.json())
+          .then(txn => {
+            console.log('Transaction response:', txn);
+            if (out) out.textContent += '\n\nTransaction:\n' + JSON.stringify(txn, null, 2);
+          })
+          .catch(err => {
+            console.error(err);
+            if (out) out.textContent += '\n\nTransaction error: ' + String(err);
+          });
+        } else {
+          // If your build doesn’t expose a temporary_token, we still complete the PoC path:
+          // Tokenizer called autoPay -> /api/checkout, which returned {status:'success'}.
+          // That demonstrates the end-to-end Apple Pay sheet + gateway handoff.
+        }
+      },
 
-          if (response?.temporary_token) {
-            console.log('[Tokenizer] temporary_token received:', response.temporary_token);
+      settings: {
+        payment: {
+          // Apple Pay only for this PoC; add 'card','ach' if you want
+          types: ['apple_pay'],
 
-            fetch('/api/transaction', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: 'authorize',
-                amount: Math.round(parseFloat(amountStr || '1.23') * 100),
-                apple_pay_temporary_token: response.temporary_token
+          // Apple Pay config for Simple Domain Registration
+          applePay: {
+            // your Apple Pay Key ID from IQPro (APPLEY key row "ID")
+            key: cfg.keyId,
+
+            // TIP: YOUR_URL -> your deployed domain (host only)
+            // Tokenizer will send the Apple authorization event to your backend.
+            // Your /api/checkout should return {status:'success'} for the PoC.
+            autoPay: (authorizationEvent) => {
+              return fetch(`https://${cfg.domain}/api/checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(authorizationEvent)
               })
-            })
-            .then(r => r.json())
-            .then(txn => {
-              console.log('[Tokenizer] Transaction response:', txn);
-              if (out) out.textContent += '\n\nTransaction:\n' + JSON.stringify(txn, null, 2);
-            })
-            .catch(err => {
-              console.error('[Tokenizer] Transaction error:', err);
-              if (out) out.textContent += '\n\nTransaction error: ' + String(err);
-            });
-          } else {
-            console.warn('[Tokenizer] No temporary_token returned in submission. Check Tokenizer config or backend flow.');
-          }
-        },
+              .then(r => r.json())
+              .then(body => (body?.status === 'success' ? 'success' : 'fail'))
+              .catch(() => 'fail');
+            },
 
-        settings: {
-          payment: {
-            types: ['apple_pay'],
-            applePay: {
-              key: cfg.keyId,
-              autoPay: (authorizationEvent) => {
-                console.log('[Tokenizer] autoPay invoked, sending authorizationEvent:', authorizationEvent);
-
-                return fetch(`https://${cfg.domain}/api/checkout`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(authorizationEvent)
-                })
-                .then(r => r.json())
-                .then(body => {
-                  console.log('[Tokenizer] /api/checkout response:', body);
-                  return body?.status === 'success' ? 'success' : 'fail';
-                })
-                .catch(err => {
-                  console.error('[Tokenizer] autoPay fetch failed:', err);
-                  return 'fail';
-                });
-              },
-              version: 5,
-              payment: {
-                countryCode: 'US',
-                currencyCode: 'USD',
-                total: { label: 'Demo Order', amount: amountStr || '1.23' },
-                merchantCapabilities: ['supports3DS']
-              }
+            // Apple Pay sheet parameters
+            version: 5,
+            payment: {
+              countryCode: 'US',
+              currencyCode: 'USD',
+              total: { label: 'Demo Order', amount: amountStr || '1.23' },
+              merchantCapabilities: ['supports3DS']
             }
           }
         },
 
-        styles: {
-          input: { height: '40px', 'font-size': '16px' }
-        }
-      });
+        // (Optional) show some extra sections if you want a fuller form,
+        // kept here to mimic your working style sample:
+        user:     { showInline: true, showName: true, showEmail: true, showPhone: true, showTitle: true },
+        billing:  { show: false },
+        shipping: { show: false }
+      },
 
-      console.log('[Tokenizer] Initialized. Tokenizer instance:', tokenizer);
+      // (Optional) light styling hook like your working example
+      styles: {
+        input: { height: '40px', 'font-size': '16px' }
+      }
+    });
 
-      // Optional manual trigger (like in your working sample)
-      window.submitPayment = () => {
-        console.log('[Tokenizer] submitPayment() invoked');
-        tokenizer.submit();
-      };
-    }
-
-    window.addEventListener('load', init);
-  } catch (err) {
-    console.error('[Tokenizer] Fatal init error:', err);
+    // Expose a submit() button like your sample (not required for Apple Pay flow)
+    window.submitPayment = () => tokenizer.submit();
   }
+
+  window.addEventListener('load', init);
 })();
