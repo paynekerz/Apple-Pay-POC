@@ -55,40 +55,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // If you go through Tokenizer’s gateway first and it returns a temporary token, IQPro can accept that path too.
       payload.payment_method = { temporary_token: body.temporary_token };
     } else {
-      // Build the full Apple Pay token object from the browser event (what you’re logging).
-      // The event looks like: authorizationEvent.payment.token.{paymentData,paymentMethod,transactionIdentifier}
-      const token = body?.authorizationEvent?.payment?.token;
-      if (!token?.paymentData || !APPLE_KEY_ID) {
-        return res
-          .status(400)
-          .json({ error: "Missing Apple Pay token or APPLEPAY_KEY_ID" });
-      }
+      // inside handler:
+if (!process.env.APPLEPAY_KEY_ID) {
+  console.error('[transaction] APPLEPAY_KEY_ID missing');
+  return res.status(400).json({ error: 'Missing Apple Pay token or APPLEPAY_KEY_ID' });
+}
 
-      // IQPro expects this exact shape:
-      // payment_method.apple_pay_token.key_id + pkpaymenttoken (Apple’s token as-is)
-      payload.payment_method = {
-        apple_pay_token: {
-          key_id: APPLE_KEY_ID,
-          pkpaymenttoken: {
-            paymentData: {
-              data: token.paymentData.data,
-              signature: token.paymentData.signature,
-              header: {
-                publicKeyHash: token.paymentData.header.publicKeyHash,
-                ephemeralPublicKey: token.paymentData.header.ephemeralPublicKey,
-                transactionId: token.paymentData.header.transactionId,
-              },
-              version: token.paymentData.version, // e.g., "EC_v1"
-            },
-            paymentMethod: {
-              displayName: token.paymentMethod?.displayName ?? null,
-              network: token.paymentMethod?.network ?? null,
-              type: token.paymentMethod?.type ?? null,
-            },
-            transactionIdentifier: token.transactionIdentifier,
-          },
+let token = body?.appleToken
+         || body?.authorizationEvent?.payment?.token; // legacy path
+
+if (!token?.paymentData) {
+  return res.status(400).json({ error: 'Missing Apple Pay token or APPLEPAY_KEY_ID' });
+}
+
+payload.payment_method = {
+  apple_pay_token: {
+    key_id: process.env.APPLEPAY_KEY_ID,
+    pkpaymenttoken: {
+      paymentData: {
+        data: token.paymentData.data,
+        signature: token.paymentData.signature,
+        header: {
+          publicKeyHash: token.paymentData.header.publicKeyHash,
+          ephemeralPublicKey: token.paymentData.header.ephemeralPublicKey,
+          transactionId: token.paymentData.header.transactionId
         },
-      };
+        version: token.paymentData.version
+      },
+      paymentMethod: {
+        displayName: token.paymentMethod?.displayName ?? null,
+        network: token.paymentMethod?.network ?? null,
+        type: token.paymentMethod?.type ?? null
+      },
+      transactionIdentifier: token.transactionIdentifier
+    }
+  }
+};
+
     }
 
     // Send to IQPro Transactions API
