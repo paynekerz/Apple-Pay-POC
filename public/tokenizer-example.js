@@ -1,15 +1,18 @@
 (async () => {
-  // Pull public key + apple-pay config from your echo endpoint
+  console.log('[Tokenizer] Fetching config from /api/echo-verify...');
   const cfg = await (await fetch('/api/echo-verify?cb=' + Date.now())).json();
   if (!cfg?.publicKey || !cfg?.keyId || !cfg?.domain) {
     console.error('Missing Tokenizer config'); return;
   }
+
+   console.log('[Tokenizer] Config loaded:', cfg);
 
   // Optional: read a visible total from your page; default $1.23
   const amountStr = (document.querySelector('#total-amount')?.textContent || '1.23').trim();
 
   let tokenizer;
   function init() {
+    console.log('[Tokenizer] Initializing Tokenizer...');
     tokenizer = new Tokenizer({
       // TIP: PAYMENT_PROVIDER_URL -> app.basysiqpro.com
       url: 'https://sandbox.basysiqpro.com',
@@ -26,6 +29,7 @@
 
         // If Tokenizer returns a temporary token, immediately simulate an authorization
         if (response?.token) {
+            console.log('[Tokenizer] temporary_token received:', response.token);
           fetch('/api/transaction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -65,14 +69,21 @@
             // Tokenizer will send the Apple authorization event to your backend.
             // Your /api/checkout should return {status:'success'} for the PoC.
             autoPay: (authorizationEvent) => {
+                console.log('[Tokenizer] autoPay invoked, sending authorizationEvent:', authorizationEvent);
               return fetch(`https://${cfg.domain}/api/checkout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(authorizationEvent)
               })
               .then(r => r.json())
-              .then(body => (body?.status === 'success' ? 'success' : 'fail'))
-              .catch(() => 'fail');
+                .then(body => {
+                  console.log('[Tokenizer] /api/checkout response:', body);
+                  return body?.status === 'success' ? 'success' : 'fail';
+                })
+              .catch(err => {
+                  console.error('[Tokenizer] autoPay fetch failed:', err);
+                  return 'fail';
+                });
             },
 
             // Apple Pay sheet parameters
@@ -99,8 +110,13 @@
       }
     });
 
-    // Expose a submit() button like your sample (not required for Apple Pay flow)
-    window.submitPayment = () => tokenizer.submit();
+    console.log('[Tokenizer] Initialized. Tokenizer instance:', tokenizer);
+
+      // Optional manual trigger (like in your working sample)
+      window.submitPayment = () => {
+        console.log('[Tokenizer] submitPayment() invoked');
+        tokenizer.submit();
+      };
   }
 
   window.addEventListener('load', init);
