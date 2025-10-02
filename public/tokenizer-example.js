@@ -14,7 +14,7 @@
   function init() {
     console.log('[Tokenizer] Initializing Tokenizer...');
     tokenizer = new Tokenizer({
-      // TIP: PAYMENT_PROVIDER_URL -> app.basysiqpro.com
+      // PAYMENT_PROVIDER_URL -> app.basysiqpro.com
       url: 'https://sandbox.basysiqpro.com',
       // publishable key (safe for browser)
       apikey: cfg.publicKey,
@@ -49,7 +49,6 @@
             if (out) out.textContent += '\n\nTransaction error: ' + String(err);
           });
         } else {
-          // If your build doesn’t expose a temporary_token, we still complete the PoC path:
           // Tokenizer called autoPay -> /api/checkout, which returned {status:'success'}.
           // That demonstrates the end-to-end Apple Pay sheet + gateway handoff.
         }
@@ -62,11 +61,10 @@
 
           // Apple Pay config for Simple Domain Registration
           applePay: {
-            // your Apple Pay Key ID from IQPro (APPLEY key row "ID")
+            // your Apple Pay Key ID from IQPro 
             key: cfg.keyId,
 
-            // TIP: YOUR_URL -> your deployed domain (host only)
-            // Tokenizer will send the Apple authorization event to your backend.
+            // Tokenizer will send the Apple authorization event to backend.
             // Your /api/checkout should return {status:'success'} for the PoC.
             autoPay: (authorizationEvent) => {
                 console.log('[Tokenizer] autoPay invoked, sending authorizationEvent:', authorizationEvent);
@@ -97,14 +95,11 @@
           }
         },
 
-        // (Optional) show some extra sections if you want a fuller form,
-        // kept here to mimic your working style sample:
         user:     { showInline: true, showName: true, showEmail: true, showPhone: true, showTitle: true },
         billing:  { show: false },
         shipping: { show: false }
       },
 
-      // (Optional) light styling hook like your working example
       styles: {
         input: { height: '40px', 'font-size': '16px' }
       }
@@ -112,7 +107,6 @@
 
     console.log('[Tokenizer] Initialized. Tokenizer instance:', tokenizer);
 
-      // Optional manual trigger (like in your working sample)
       window.submitPayment = () => {
         console.log('[Tokenizer] submitPayment() invoked');
         tokenizer.submit();

@@ -11,8 +11,6 @@
       crossorigin
     ></script>
 
-    <!-- IQPro WalletJS (Apple Pay helper that returns temporary_token) -->
-    <!-- <script src="https://sandbox.basysiqpro.com/walletjs/walletjs.js"></script> -->
     <script src="https://sandbox.basysiqpro.com/tokenizer/tokenizer.js"></script>
     <script src="/tokenizer-example.js" defer></script>
 
@@ -71,12 +69,6 @@
   <div id="container"></div>
 </section>
 
-    <!-- <section class="row">
-      <h2>Apple Pay Button & Flow</h2>
-      <div id="button-wrap"></div>
-      <div><small id="support-msg"></small></div>
-    </section> -->
-
     <section class="row">
       <h2>Last Response</h2>
       <div id="out" class="log">—</div>
@@ -105,131 +97,5 @@
           }
         });
     </script>
-
-    <!-- <script>
-      // ---------- helpers ----------
-      const out = document.getElementById("out");
-      const log = (obj, label = "") => {
-        const text =
-          typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
-        out.textContent = label ? `${label}\n${text}` : text;
-        console.log(label || "LOG", obj);
-      };
-
-      // ---------- 1) Simple Domain Registration: simulate check ----------
-      document
-        .getElementById("btn-check")
-        .addEventListener("click", async () => {
-          const s = document.getElementById("verify-status");
-          try {
-            const res = await fetch(
-              "/.well-known/apple-developer-merchantid-domain-association.txt",
-              { cache: "no-store" }
-            );
-            if (res.ok) {
-              s.innerHTML =
-                'Status: <strong class="ok">Verification file accessible ✅</strong>';
-            } else {
-              s.innerHTML =
-                'Status: <strong class="bad">Not found / blocked ❌</strong>';
-            }
-          } catch (e) {
-            s.innerHTML =
-              'Status: <strong class="bad">Request error ❌</strong>';
-          }
-        });
-
-      // ---------- 2) Show Apple Pay button if available ----------
-      function applePaySupported() {
-        try {
-          return (
-            window.ApplePaySession &&
-            ApplePaySession.supportsVersion(3) &&
-            ApplePaySession.canMakePayments()
-          );
-        } catch {
-          return false;
-        }
-      }
-      // (Apple docs: canMakePayments / supportsVersion)
-      // This only checks availability, not that a card is provisioned. :contentReference[oaicite:7]{index=7}
-
-      const wrap = document.getElementById("button-wrap");
-      const supportMsg = document.getElementById("support-msg");
-
-      if (applePaySupported()) {
-        const btn = document.createElement("apple-pay-button");
-        btn.setAttribute("buttonstyle", "black");
-        btn.setAttribute("type", "plain");
-        btn.setAttribute("locale", "en-US");
-        btn.addEventListener("click", onApplePayClick);
-        wrap.appendChild(btn);
-        supportMsg.textContent = "Apple Pay seems available on this device.";
-      } else {
-        const fallback = document.createElement("button");
-        fallback.textContent = "Simulate Apple Pay (mock)";
-        fallback.addEventListener("click", onApplePayClick);
-        wrap.appendChild(fallback);
-        supportMsg.textContent =
-          "Apple Pay not available here; using a mock sheet for demo.";
-      }
-
-      // ---------- 3) Use IQPro WalletJS to get a temporary_token, then run /api/transaction ----------
-      async function onApplePayClick() {
-        const cfg = await (
-          await fetch("/api/echo-verify?cb=" + Date.now())
-        ).json();
-        if (!cfg?.keyId || !cfg?.domain)
-          throw new Error("Missing keyId/domain from /api/echo-verify");
-
-        const ap = new walletjs.ApplePay({
-          key: cfg.keyId,
-          domain: cfg.domain, // must match the verified domain (no scheme, no slash)
-          validateMerchantUrl: "/api/public/applepay/validatemerchant", // <-- use your working route
-
-          payment: {
-            version: 3,
-            merchantCapabilities: [
-              "supports3DS",
-              "supportsCredit",
-              "supportsDebit",
-            ],
-            supportedNetworks: ["visa", "masterCard", "discover"],
-            countryCode: "US",
-            // IMPORTANT: remove any hard-coded merchantIdentifier in Simple Registration
-          },
-          details: {
-            total: {
-              label: "Demo Order",
-              amount: { currency: "USD", value: "1.23" },
-            },
-          },
-          options: { requestShipping: false },
-        });
-
-        try {
-          const tokenResp = await ap.submit(); // should now produce { temporary_token: "..." }
-          log(tokenResp, "Tokenizer (WalletJS) response:");
-
-          if (!tokenResp?.temporary_token) {
-            throw new Error("No temporary_token returned from WalletJS.");
-          }
-
-          const txn = await fetch("/api/transaction", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "authorize",
-              amount: 123,
-              apple_pay_temporary_token: tokenResp.temporary_token,
-            }),
-          }).then((r) => r.json());
-
-          log(txn, "Transaction response:");
-        } catch (err) {
-          log({ error: String(err) }, "Error:");
-        }
-      }
-    </script> -->
   </body>
 </html>
