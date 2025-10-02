@@ -1,7 +1,7 @@
 // api/transaction.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const BASYS_URL = 'https://sandbox.basysiqpro.com/v3/transactions/process';
+const BASYS_URL = 'https://sandbox.basysiqpro.com/api/transaction';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
