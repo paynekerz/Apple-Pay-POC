@@ -15,9 +15,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const {
       type = 'sale',
-      amount,           // integer cents
+      amount,           
       currency = 'USD',
-      appleToken,       // we’ll expect the structured Apple token here
+      appleToken,       
     } = req.body || {};
 
     const APPLEPAY_KEY_ID = process.env.APPLEPAY_KEY_ID;
@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing APPLEPAY_KEY_ID env' });
     }
     if (!appleToken?.paymentData?.data) {
-      return res.status(400).json({ error: 'Missing Apple Pay data' });
+      return res.status(400).json(appleToken);
     }
     if (!appleToken?.paymentData?.signature) {
       return res.status(400).json({ error: 'Missing Apple Pay signature' });
