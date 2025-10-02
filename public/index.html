@@ -82,6 +82,30 @@
       <div id="out" class="log">—</div>
     </section>
 
+    <script>
+      document
+        .getElementById("btn-check")
+        .addEventListener("click", async () => {
+          const s = document.getElementById("verify-status");
+          try {
+            const res = await fetch(
+              "/.well-known/apple-developer-merchantid-domain-association.txt",
+              { cache: "no-store" }
+            );
+            if (res.ok) {
+              s.innerHTML =
+                'Status: <strong class="ok">Verification file accessible ✅</strong>';
+            } else {
+              s.innerHTML =
+                'Status: <strong class="bad">Not found / blocked ❌</strong>';
+            }
+          } catch (e) {
+            s.innerHTML =
+              'Status: <strong class="bad">Request error ❌</strong>';
+          }
+        });
+    </script>
+
     <!-- <script>
       // ---------- helpers ----------
       const out = document.getElementById("out");
