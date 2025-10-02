@@ -33,8 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!APPLEPAY_KEY_ID) {
       return res.status(400).json({ error: 'Missing APPLEPAY_KEY_ID env' });
     }
-    if (!appleToken?.paymentData?.data || !appleToken?.paymentData?.signature) {
-      return res.status(400).json({ error: 'Missing Apple Pay token' });
+    if (!appleToken?.paymentData?.data) {
+      return res.status(400).json({ error: 'Missing Apple Pay data' });
+    }
+    if (!appleToken?.paymentData?.signature) {
+      return res.status(400).json({ error: 'Missing Apple Pay signature' });
     }
     if (!amount || Number.isNaN(+amount)) {
       return res.status(400).json({ error: 'Missing/invalid amount' });
