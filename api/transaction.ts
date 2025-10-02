@@ -4,7 +4,7 @@
 // Environment vars (already in your Vercel):
 // IQPRO_API_URL=https://sandbox.basysiqpro.com
 // IQPRO_API_KEY=api_xxx...
-// APPLEPAY_KEY_ID=d3epo0f0i47dpgrupdag     <-- from IQPro Apple Pay settings (the ID column)
+// APPLEPAY_KEY_ID=d3epo0f0i47dpgrupdag
 // (currency optional) CURRENCY=USD
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
@@ -58,6 +58,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Build the full Apple Pay token object from the browser event (what you’re logging).
       // The event looks like: authorizationEvent.payment.token.{paymentData,paymentMethod,transactionIdentifier}
       const token = body?.authorizationEvent?.payment?.token;
+      console.log(token?.paymentData);
+      console.log(APPLE_KEY_ID);
       if (!token?.paymentData || !APPLE_KEY_ID) {
         return res
           .status(400)
