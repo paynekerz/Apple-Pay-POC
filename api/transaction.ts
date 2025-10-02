@@ -63,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${IQPRO_API_KEY}`,
+        Authorization: `${IQPRO_API_KEY}`,
       },
       body: JSON.stringify(basysBody),
     });

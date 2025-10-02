@@ -109,6 +109,8 @@
                   }
                 : null;
 
+                console.log(appleToken);
+
               return fetch("/api/transaction", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
