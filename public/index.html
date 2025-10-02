@@ -12,7 +12,7 @@
     ></script>
 
     <!-- IQPro WalletJS (Apple Pay helper that returns temporary_token) -->
-    <script src="https://sandbox.basysiqpro.com/walletjs/walletjs.js"></script>
+    <!-- <script src="https://sandbox.basysiqpro.com/walletjs/walletjs.js"></script> -->
     <script src="https://sandbox.basysiqpro.com/tokenizer/tokenizer.js"></script>
     <script src="/tokenizer-example.js"></script>
 
@@ -71,19 +71,18 @@
   <div id="container"></div>
 </section>
 
-
-    <section class="row">
+    <!-- <section class="row">
       <h2>Apple Pay Button & Flow</h2>
       <div id="button-wrap"></div>
       <div><small id="support-msg"></small></div>
-    </section>
+    </section> -->
 
     <section class="row">
       <h2>Last Response</h2>
       <div id="out" class="log">—</div>
     </section>
 
-    <script>
+    <!-- <script>
       // ---------- helpers ----------
       const out = document.getElementById("out");
       const log = (obj, label = "") => {
@@ -207,6 +206,6 @@
           log({ error: String(err) }, "Error:");
         }
       }
-    </script>
+    </script> -->
   </body>
 </html>
