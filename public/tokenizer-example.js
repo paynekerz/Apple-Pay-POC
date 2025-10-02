@@ -76,42 +76,53 @@
             // Your /api/checkout should return {status:'success'} for the PoC.
             // Inside applePay.settings.payment.applePay.autoPay
             autoPay: (authorizationEvent) => {
-              console.log(
-                "[Tokenizer] autoPay invoked, sending authorizationEvent:",
-                authorizationEvent
-              );
+  console.log('[Tokenizer] autoPay invoked, sending authorizationEvent:', authorizationEvent);
 
-              // Convert $1.23 display to integer cents as you already do elsewhere
-              const amountStr = (
-                document.querySelector("#total-amount")?.textContent || "1.23"
-              ).trim();
-              const amountCents = Math.round(parseFloat(amountStr) * 100);
+  const amountStr = (document.querySelector('#total-amount')?.textContent || '1.23').trim();
+  const amountCents = Math.round(parseFloat(amountStr) * 100);
 
-              return fetch("/api/transaction", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  type: "sale", // or 'authorize'
-                  amount: amountCents, // integer cents
-                  currency: "USD",
-                  authorizationEvent, // <- full event from Apple Pay
-                }),
-              })
-                .then((r) => r.json())
-                .then((body) => {
-                  console.log("[Tokenizer] /api/transaction response ->", body);
-                  // Return 'success' or 'fail' back to Apple’s sheet
-                  return body?.status === "approved" ||
-                    body?.result === "approved"
-                    ? "success"
-                    : "success";
-                  // Note: many gateways still want you to return 'success' to close the sheet once the API returns 200.
-                })
-                .catch((err) => {
-                  console.error("[Tokenizer] /api/transaction error", err);
-                  return "fail";
-                });
-            },
+  // 🔑 Make a plain JSON token payload
+  const token = authorizationEvent?.payment?.token;
+  const appleToken = token ? {
+    paymentData: {
+      data: token.paymentData?.data,
+      signature: token.paymentData?.signature,
+      header: {
+        publicKeyHash: token.paymentData?.header?.publicKeyHash,
+        ephemeralPublicKey: token.paymentData?.header?.ephemeralPublicKey,
+        transactionId: token.paymentData?.header?.transactionId,
+      },
+      version: token.paymentData?.version, // e.g., "EC_v1"
+    },
+    paymentMethod: {
+      displayName: token.paymentMethod?.displayName ?? null,
+      network: token.paymentMethod?.network ?? null,
+      type: token.paymentMethod?.type ?? null,
+    },
+    transactionIdentifier: token.transactionIdentifier,
+  } : null;
+
+  return fetch('/api/transaction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'sale',
+      amount: amountCents,
+      currency: 'USD',
+      appleToken,                   
+    })
+  })
+  .then(r => r.json())
+  .then(body => {
+    console.log('[Tokenizer] /api/transaction response ->', body);
+    return body?.status === 'approved' || body?.result === 'approved' ? 'success' : 'success';
+  })
+  .catch(err => {
+    console.error('[Tokenizer] /api/transaction error', err);
+    return 'fail';
+  });
+},
+
 
             // Apple Pay sheet parameters
             version: 5,
