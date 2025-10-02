@@ -109,6 +109,8 @@
                   }
                 : null;
 
+              console.log(appleToken);
+              console.log(appleToken.paymentData.data);
               console.log(appleToken.paymentData.signature);
 
               return fetch("/api/transaction", {
