@@ -98,7 +98,7 @@
                           token.paymentData?.header?.ephemeralPublicKey,
                         transactionId: token.paymentData?.header?.transactionId,
                       },
-                      version: token.paymentData?.version, 
+                      version: token.paymentData?.version,
                     },
                     paymentMethod: {
                       displayName: token.paymentMethod?.displayName ?? null,
@@ -118,7 +118,12 @@
                   type: "sale",
                   amount: amountCents,
                   currency: "USD",
-                  appleToken,
+                  payment_method: {
+                    applepay: {
+                      key: cfg.keyId, 
+                      token: appleToken, 
+                    },
+                  },
                 }),
               })
                 .then((r) => r.json())
