@@ -6,10 +6,10 @@
     <title>IQPro Apple Pay • PoC</title>
 
     <!-- Apple Pay JS (for feature checks) -->
-    <script
+    <!-- <script
       src="https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js"
       crossorigin
-    ></script>
+    ></script> -->
 
     <!-- IQPro WalletJS (Apple Pay helper that returns temporary_token) -->
     <script src="https://sandbox.basysiqpro.com/walletjs/walletjs.js"></script>
@@ -72,18 +72,18 @@
 </section>
 
 
-    <section class="row">
+    <!-- <section class="row">
       <h2>Apple Pay Button & Flow</h2>
       <div id="button-wrap"></div>
       <div><small id="support-msg"></small></div>
-    </section>
+    </section> -->
 
     <section class="row">
       <h2>Last Response</h2>
       <div id="out" class="log">—</div>
     </section>
 
-    <script>
+    <!-- <script>
       // ---------- helpers ----------
       const out = document.getElementById("out");
       const log = (obj, label = "") => {
@@ -207,6 +207,6 @@
           log({ error: String(err) }, "Error:");
         }
       }
-    </script>
+    </script> -->
   </body>
 </html>
