@@ -86,8 +86,6 @@
                 document.querySelector("#total-amount")?.textContent || "1.23"
               ).trim();
               const amountCents = Math.round(parseFloat(amountStr) * 100);
-              console.log('[Client] token.paymentData:', token?.paymentData);
-console.log('[Client] transactionIdentifier:', token?.transactionIdentifier);
 
               return fetch("/api/transaction", {
                 method: "POST",

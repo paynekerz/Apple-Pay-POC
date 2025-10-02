@@ -58,13 +58,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Build the full Apple Pay token object from the browser event (what you’re logging).
       // The event looks like: authorizationEvent.payment.token.{paymentData,paymentMethod,transactionIdentifier}
       const token = body?.authorizationEvent?.payment?.token;
-      console.log('[Server] APPLEPAY_KEY_ID:', process.env.APPLEPAY_KEY_ID);
-console.log('[Server] incoming appleToken.paymentData:', body?.appleToken?.paymentData);
-
-if (!process.env.APPLEPAY_KEY_ID || !body?.appleToken?.paymentData) {
-  return res.status(400).json({ error: 'Missing Apple Pay token or APPLEPAY_KEY_ID' });
-}
-
+      if (!token?.paymentData || !APPLE_KEY_ID) {
+        return res
+          .status(400)
+          .json({ error: "Missing Apple Pay token or APPLEPAY_KEY_ID" });
+      }
 
       // IQPro expects this exact shape:
       // payment_method.apple_pay_token.key_id + pkpaymenttoken (Apple’s token as-is)
