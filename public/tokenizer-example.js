@@ -58,7 +58,7 @@
       settings: {
         payment: {
           // Apple Pay only for this PoC; add 'card','ach' if you want
-          types: ['apple_pay'],
+          types: ['card', 'apple_pay'],
 
           // Apple Pay config for Simple Domain Registration
           applePay: {
