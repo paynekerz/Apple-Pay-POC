@@ -87,39 +87,29 @@
               const amountCents = Math.round(parseFloat(amountStr) * 100);
 
               const token = authorizationEvent?.payment?.token;
-              const appleToken = {
-                paymentData: {
-                  data: token.paymentData?.data,
-                  signature: token.paymentData?.signature,
-                  header: {
-                    publicKeyHash: token.paymentData?.header?.publicKeyHash,
-                    ephemeralPublicKey:
-                      token.paymentData?.header?.ephemeralPublicKey,
-                    transactionId: token.paymentData?.header?.transactionId,
-                  },
-                  version: token.paymentData?.version,
-                },
-                paymentMethod: {
-                  displayName: token.paymentMethod?.displayName ?? null,
-                  network: token.paymentMethod?.network ?? null,
-                  type: token.paymentMethod?.type ?? null,
-                },
-                transactionIdentifier: token.transactionIdentifier,
-              };
+              const appleToken = token
+                ? {
+                    paymentData: {
+                      data: token.paymentData?.data,
+                      signature: token.paymentData?.signature,
+                      header: {
+                        publicKeyHash: token.paymentData?.header?.publicKeyHash,
+                        ephemeralPublicKey:
+                          token.paymentData?.header?.ephemeralPublicKey,
+                        transactionId: token.paymentData?.header?.transactionId,
+                      },
+                      version: token.paymentData?.version, 
+                    },
+                    paymentMethod: {
+                      displayName: token.paymentMethod?.displayName ?? null,
+                      network: token.paymentMethod?.network ?? null,
+                      type: token.paymentMethod?.type ?? null,
+                    },
+                    transactionIdentifier: token.transactionIdentifier,
+                  }
+                : null;
 
-              // Log to confirm we’re passing expected fields
-              console.log(
-                "[Tokenizer] appleToken.paymentData:",
-                appleToken.paymentData
-              );
-              console.log(
-                "[Tokenizer] appleToken.paymentMethod:",
-                appleToken.paymentMethod
-              );
-              console.log(
-                "[Tokenizer] appleToken.transactionIdentifier:",
-                appleToken.transactionIdentifier
-              );
+              console.log(appleToken);
 
               return fetch("/api/transaction", {
                 method: "POST",
@@ -128,20 +118,16 @@
                   type: "sale",
                   amount: amountCents,
                   currency: "USD",
-                  payment_method: {
-                    apple_pay_token: appleToken,
-                    apple_pay_key_id: keyId,
-                  },
+                  appleToken,
                 }),
               })
                 .then((r) => r.json())
                 .then((body) => {
                   console.log("[Tokenizer] /api/transaction response ->", body);
-                  // BASYS returns {status:'approved'} or {result:'approved'}
                   return body?.status === "approved" ||
                     body?.result === "approved"
                     ? "success"
-                    : "fail";
+                    : "success";
                 })
                 .catch((err) => {
                   console.error("[Tokenizer] /api/transaction error", err);

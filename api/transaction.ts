@@ -1,47 +1,89 @@
 // api/transaction.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const IQPRO_URL = process.env.IQPRO_API_URL || 'https://sandbox.basysiqpro.com';
+const BASYS_URL = 'https://sandbox.basysiqpro.com/v3/transactions/process';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS / preflight
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return res.status(204).end();
-  }
-
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const apiKey = process.env.IQPRO_API_KEY; // e.g. api_2uarb...
-    if (!apiKey) return res.status(500).json({ error: 'Missing IQPRO_API_KEY' });
+    const {
+      type = 'sale',
+      amount,           // integer cents
+      currency = 'USD',
+      appleToken,       // we’ll expect the structured Apple token here
+    } = req.body || {};
 
-    // Pass through the payload exactly as front-end built it
-    const payload = req.body;
+    const APPLEPAY_KEY_ID = process.env.APPLEPAY_KEY_ID;
+    const IQPRO_API_KEY   = process.env.IQPRO_API_KEY; 
 
-    // Quick validations + logs
-    console.log('[txn] apple_pay_key_id:', payload?.payment_method?.apple_pay_key_id);
-    console.log('[txn] token.version:', payload?.payment_method?.apple_pay_token?.paymentData?.version);
-    console.log('[txn] token.header.transactionId:', payload?.payment_method?.apple_pay_token?.paymentData?.header?.transactionId);
+    // Log what you asked for:
+    console.log('[txn] APPLEPAY_KEY_ID:', APPLEPAY_KEY_ID);
+    console.log('[txn] token.paymentData:', appleToken?.paymentData);
 
-    const r = await fetch('https://sandbox.basysiqpro.com/api/transaction', {
+    if (!IQPRO_API_KEY) {
+      return res.status(500).json({ error: 'Missing IQPRO_API_KEY env' });
+    }
+    if (!APPLEPAY_KEY_ID) {
+      return res.status(400).json({ error: 'Missing APPLEPAY_KEY_ID env' });
+    }
+    if (!appleToken?.paymentData?.data || !appleToken?.paymentData?.signature) {
+      return res.status(400).json({ error: 'Missing Apple Pay token' });
+    }
+    if (!amount || Number.isNaN(+amount)) {
+      return res.status(400).json({ error: 'Missing/invalid amount' });
+    }
+
+    // Shape body exactly as BASYS expects
+    const basysBody = {
+      type,                       
+      amount,                     
+      currency,
+      payment_method: {
+        apple_pay_token: {
+          data: appleToken.paymentData.data,
+          signature: appleToken.paymentData.signature,
+          header: {
+            ephemeralPublicKey: appleToken.paymentData.header?.ephemeralPublicKey,
+            publicKeyHash:      appleToken.paymentData.header?.publicKeyHash,
+            transactionId:      appleToken.paymentData.header?.transactionId,
+          },
+          version: appleToken.paymentData.version,
+        },
+      },
+      // Per docs: supply your Apple Pay Key Id issued by BASYS / IQPro
+      apple_pay_key_id: APPLEPAY_KEY_ID,
+      // Optional but often useful:
+      metadata: {
+        transactionIdentifier: appleToken.transactionIdentifier ?? null,
+        paymentNetwork: appleToken.paymentMethod?.network ?? null,
+      },
+    };
+
+    const r = await fetch(BASYS_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // IQPro sandbox expects API key directly in Authorization (no "Bearer ")
-        'Authorization': apiKey,
+        // BASYS sandbox key
+        Authorization: `Bearer ${IQPRO_API_KEY}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(basysBody),
     });
 
     const body = await r.json().catch(() => ({}));
-    console.log('[txn] BASYS response:', r.status, body);
 
-    res.status(r.status).json(body);
-  } catch (e) {
-    console.error('[txn] error', e);
-    res.status(500).json({ error: 'server error', detail: String(e) });
+    console.log('[txn] BASYS status:', r.status, 'body:', body);
+
+    // Surface BASYS result back to client
+    return res.status(r.ok ? 200 : r.status).json(body);
+  } catch (err: any) {
+    console.error('[txn] Unhandled error:', err);
+    return res.status(500).json({ error: 'Server error', detail: String(err?.message || err) });
   }
 }
