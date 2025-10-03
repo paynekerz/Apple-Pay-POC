@@ -16,10 +16,10 @@ Before you begin, make sure you have the following:
 Apple requires domain verification to use Apple Pay on the web. This ensures your domain is trusted to initiate Apple Pay sessions.  
 
 1. **Log in to your Apple Developer Account** and navigate to **Certificates, Identifiers & Profiles → Identifiers**.  
-   [Image]  
+     
 
 2. **Create a Merchant ID**. Use a reverse URL format (for example, `com.yourcompany.merchant`).  
-   [Image]  
+     
 
 3. Scroll down to **Merchant Domains**, then select **Add Domain**.  
    - Enter your domain (for example, `example.com`) and click **Save**.  
@@ -30,7 +30,7 @@ Apple requires domain verification to use Apple Pay on the web. This ensures you
      ```
      https://yourdomain.com/.well-known/apple-developer-merchantid-domain-association.txt
      ```
-   [Image]  
+     
 
 5. Once the file is uploaded, return to the Apple Developer portal and click **Verify** next to your domain.  
 
@@ -44,7 +44,7 @@ Once your Apple domain is verified, you need to configure it inside your IQPro g
 2. If you haven’t already, **activate the Apple Pay service** under **Settings → Services**.  
 3. Go to **Settings → Apple Pay**.  
 4. Select **Add New Certificate**, then choose **Custom Configuration**.  
-   [Image]  
+     
 5. Enter the same domain you used for the `apple-developer-merchantid-domain-association.txt` file and save.  
 6. IQPro will generate a **Key ID**.  
    - This Key ID links your Apple Pay setup to IQPro.  
