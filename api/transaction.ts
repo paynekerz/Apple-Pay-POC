@@ -43,8 +43,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       amount,
       currency,
       payment_method: {
-        key_id: APPLEPAY_KEY_ID,
         apple_pay_token: {
+          key_id: APPLEPAY_KEY_ID,
           pkpaymenttoken: {
             paymentData: {
               data: appleToken.paymentData.data,
