@@ -55,22 +55,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   appleToken.paymentData.header?.ephemeralPublicKey,
                 transactionId: appleToken.paymentData.header?.transactionId,
               },
+              version: appleToken.paymentData.version,
             },
+            paymentMethod: {
+              displayName: appleToken.paymentMethod?.displayName ?? null,
+              network: appleToken.paymentMethod?.network ?? null,
+              type: appleToken.paymentMethod?.type ?? null,
+            },
+            transactionIdentifier: appleToken.transactionIdentifier ?? null,
           },
-          version: appleToken.paymentData.version,
         },
-        paymentMethod: {
-          displayName: appleToken.paymentMethod?.displayName ?? null,
-          network: appleToken.paymentMethod?.network ?? null,
-          type: appleToken.paymentMethod?.type ?? null,
-        },
-        transactionIdentifier: appleToken.transactionIdentifier ?? null,
       },
     };
-
-//     if (basysBody) {
-//   return res.status(200).json({ basysBody });
-// }   
 
     const r = await fetch(BASYS_URL, {
       method: "POST",
