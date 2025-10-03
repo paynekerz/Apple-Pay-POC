@@ -68,17 +68,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     };
 
-    if (req.query?.debug === '1') {
-      return res.status(200).json({
-        debug: {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: IQPRO_API_KEY ? 'Bearer ***' : 'MISSING',
-          },
-          basysBody,
-        },
-      });
-    }
+    if (basysBody) {
+  return res.status(200).json({ basysBody });
+}   
 
     const r = await fetch(BASYS_URL, {
       method: "POST",
