@@ -8,7 +8,6 @@
 
   console.log("[Tokenizer] Config loaded:", cfg);
 
-  // Optional: read a visible total from your page; default $1.23
   const amountStr = (
     document.querySelector("#total-amount")?.textContent || "1.23"
   ).trim();
@@ -19,7 +18,6 @@
     tokenizer = new Tokenizer({
       // PAYMENT_PROVIDER_URL -> app.basysiqpro.com
       url: "https://sandbox.basysiqpro.com",
-      // publishable key (safe for browser)
       apikey: cfg.publicKey,
       container: "#container",
 
@@ -32,7 +30,6 @@
           out.textContent =
             "Tokenizer submission:\n" + JSON.stringify(response, null, 2);
 
-        // If Tokenizer returns a temporary token, immediately simulate an authorization
         if (response?.token) {
           console.log("[Tokenizer] temporary_token received:", response.token);
           fetch("/api/transaction", {
@@ -109,7 +106,7 @@
                   }
                 : null;
 
-                console.log(appleToken);
+              console.log(appleToken);
 
               return fetch("/api/transaction", {
                 method: "POST",
@@ -120,8 +117,8 @@
                   currency: "USD",
                   payment_method: {
                     applepay: {
-                      key: cfg.keyId, 
-                      token: appleToken, 
+                      key: cfg.keyId,
+                      token: appleToken,
                     },
                   },
                 }),

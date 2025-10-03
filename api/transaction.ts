@@ -41,21 +41,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       amount,
       currency,
       payment_method: {
+        key_id: APPLEPAY_KEY_ID,
         apple_pay_token: {
-          data: appleToken.paymentData.data,
-          signature: appleToken.paymentData.signature,
-          header: {
+          pkpaymenttoken: {
+            paymentData: {
+              data: appleToken.paymentData.data,
+              signature: appleToken.paymentData.signature,
+              header: {
+                publicKeyHash:      appleToken.paymentData.header?.publicKeyHash,
             ephemeralPublicKey: appleToken.paymentData.header?.ephemeralPublicKey,
-            publicKeyHash:      appleToken.paymentData.header?.publicKeyHash,
             transactionId:      appleToken.paymentData.header?.transactionId,
+          },
+            },
           },
           version: appleToken.paymentData.version,
         },
-      },
-      apple_pay_key_id: APPLEPAY_KEY_ID,
-      metadata: {
+        paymentMethod: {
+          displayName: appleToken.paymentMethod?.displayName ?? null,
+          network: appleToken.paymentMethod?.network ?? null,
+          type: appleToken.paymentMethod?.type ?? null,
+        },
         transactionIdentifier: appleToken.transactionIdentifier ?? null,
-        paymentNetwork: appleToken.paymentMethod?.network ?? null,
       },
     };
 
