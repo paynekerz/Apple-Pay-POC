@@ -121,7 +121,7 @@ This section shows a minimal end‑to‑end setup for IQPro Tokenizer with Apple
 Place the following in your checkout page's `<head>` and body:
 
 ```
-<!-- HEAD: load the tokenizer -->
+<!-- HEAD: load the tokenizer --> 
 <script src="https://{PAYMENT_PROVIDER_URL}/tokenizer/tokenizer.js"></script>
 
 <!-- BODY: amount display + container for the Tokenizer button/fields -->
