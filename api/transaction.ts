@@ -68,9 +68,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     };
 
-    if (basysBody) {
-  return res.status(200).json({ basysBody });
-}   
+//     if (basysBody) {
+//   return res.status(200).json({ basysBody });
+// }   
 
     const r = await fetch(BASYS_URL, {
       method: "POST",
