@@ -134,62 +134,59 @@ Place the following in your checkout page's `<head>` and body:
 ### 2) Initialize the Tokenizer (browser)
 
 ```
-(async () => {
-  // Get config from your backend (publishable key, apple key id, domain)
-  const cfg = await (await fetch('/api/echo-verify?cb=' + Date.now())).json();
+const requestedAmount = document.querySelector('#total-amount').innerText
 
-  const amount = (document.getElementById('total-amount')?.textContent || '1.23').trim();
-
-  const t = new Tokenizer({
-   // Depending on your environment
-    url: 'https://app.basysiqpro.com',
-    apikey: cfg.publicKey,           // Public API Key
+const example = new Tokenizer({
+    url: 'https://{PAYMENT_PROVIDER_URL}',
+    apikey: '<PUBLIC_API_KEY>',
     container: '#pay',
-    settings: {
-      payment: {
-        types: ['apple_pay'],
-        applePay: {
-          key: cfg.keyId,            // IQPro Apple Pay Key ID
-          version: 5,
-          payment: {
-            countryCode: 'US',
-            currencyCode: 'USD',
-            total: { label: 'Demo Order', amount }
-          },
-          // Send Apple Pay token to your server to process with IQPro
-          autoPay: (authorizationEvent) => {
-            return fetch('/api/transaction', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: 'sale',
-                amount: Math.round(parseFloat(amount) * 100),
-                currency: 'USD',
-                appleToken: {
-                  paymentData: authorizationEvent.payment.token.paymentData,
-                  paymentMethod: authorizationEvent.payment.token.paymentMethod,
-                  transactionIdentifier: authorizationEvent.payment.token.transactionIdentifier,
-                  keyId: cfg.keyId
-                }
-              })
-            })
-            .then(r => r.json())
-            .then(res => (res?.status === 'approved' || res?.result === 'approved') ? 'success' : 'fail')
-            .catch(() => 'fail');
-          }
-        }
-      }
-    },
-    submission: (response) => {
-      console.log('[Tokenizer] submission =>', response);
-      // Optionally display the response to the shopper
-      document.querySelector('#out')?.replaceChildren(document.createTextNode(JSON.stringify(response, null, 2)));
-    }
-  });
+    submission: (resp) => {
+        const elem = document.querySelector('.notification')
+        elem.querySelector('.title').innerText = `Transaction ${resp.status}!`
 
-  // Optional explicit submit for non‑Apple‑Pay flows
-  document.getElementById('submitBtn')?.addEventListener('click', () => t.submit());
-})();
+        elem.classList.remove('fail')
+        elem.classList.remove('success')
+        elem.classList.remove('hidden')
+        elem.classList.add(resp.status)
+        const timer = setTimeout(() => {
+            elem.classList.add('hidden')
+            clearTimeout(timer)
+        }, 3000)
+    },
+    settings: {
+        payment: {
+            types: ['card', 'apple_pay'],
+            card: {strict_mode: false, requireCVV: false},
+            applePay: {
+                key: '<APPLE_PAY_ID>',
+                autoPay: (authorizationEvent) => {
+                    const response = fetch(
+                        'https://{YOUR_URL}/webshop/checkout',
+                        {body: authorizationEvent, method: 'POST'}
+                    ).then((resp) => resp.json())
+                    return response
+                        .then((body) => {
+                            if (body.status === 'success') {
+                                return 'success'
+                            } else {
+                                return 'fail'
+                            }
+                        })
+                        .catch(() => {
+                            return 'fail'
+                        })
+                },
+                version: 5,
+                payment: {
+                    countryCode: 'US',
+                    currencyCode: 'USD',
+                    total: {label: 'Total Amount', amount: requestedAmount},
+                    merchantCapabilities: ['supports3DS']
+                }
+            }
+        }
+    }
+})
 
 ```
 
