@@ -16,7 +16,6 @@
   function init() {
     console.log("[Tokenizer] Initializing Tokenizer...");
     tokenizer = new Tokenizer({
-      // PAYMENT_PROVIDER_URL -> app.basysiqpro.com
       url: "https://sandbox.basysiqpro.com",
       apikey: cfg.publicKey,
       container: "#container",
@@ -54,14 +53,12 @@
                 out.textContent += "\n\nTransaction error: " + String(err);
             });
         } else {
-          // Tokenizer called autoPay -> /api/checkout, which returned {status:'success'}.
-          // That demonstrates the end-to-end Apple Pay sheet + gateway handoff.
         }
       },
 
       settings: {
         payment: {
-          // Apple Pay only for this PoC; add 'card','ach' if you want
+          // Apple Pay only for this PoC
           types: ["apple_pay"],
 
           // Apple Pay config for Simple Domain Registration
@@ -70,7 +67,6 @@
             key: cfg.keyId,
 
             // Tokenizer will send the Apple authorization event to backend.
-            // Your /api/checkout should return {status:'success'} for the PoC.
             // Inside applePay.settings.payment.applePay.autoPay
             autoPay: (authorizationEvent) => {
               console.log(

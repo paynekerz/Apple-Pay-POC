@@ -7,7 +7,8 @@ Before you begin, make sure you have the following:
 - An **Apple Developer Account**  
 - An **Apple device** capable of development and testing (iPhone, iPad, or Mac)  
 - An **Apple Sandbox Account** (for testing transactions)  
-- If you are using a **Mac** for development, a **Magic Keyboard with Touch ID** (or another biometric-capable device) for Apple Pay authentication  
+- If you are using a **Mac Mini** or other **compatable Mac Desktop** for development, a **Magic Keyboard with Touch ID** (or another biometric-capable device) for Apple Pay authentication  
+- An **iPhone**
 
 ---
 
@@ -63,6 +64,8 @@ By default, Apple Pay assumes a production environment. To test with IQPro’s s
 
 Important: If you don’t use a sandbox account with the IQPro sandbox gateway, Apple Pay transactions will fail during development.  
 
+Whichever device you choose, you **must** be signed in as your test user on the device. Failure to do so will cause Apple Pay to utilize it's production environment causing transactions to fail.
+
 
 Apple Pay PoC (IQPro Sandbox)
 =============================
@@ -102,13 +105,6 @@ Simple Domain Registration
 
 8.  Add the same domain you verified with Apple and save. IQPro will generate an **ID** for this Apple Pay configuration---this is your **Apple Pay Key ID**. Store it in your environment for later use.
 
-Sandbox vs. Production Testing
-------------------------------
-
-Apple Pay development defaults to production unless you use a sandbox tester. If you are integrating against the IQPro **sandbox** gateway, you must sign in on your Apple device with a **sandbox** Apple ID and add sandbox test cards to Wallet. Follow Apple's guide here: <https://developer.apple.com/apple-pay/sandbox-testing/>.
-
-* * * * *
-
 Tokenizer setup
 ---------------
 
@@ -145,8 +141,9 @@ Place the following in your checkout page's `<head>` and body:
   const amount = (document.getElementById('total-amount')?.textContent || '1.23').trim();
 
   const t = new Tokenizer({
+   // Depending on your environment
     url: 'https://app.basysiqpro.com',
-    apikey: cfg.publicKey,           // publishable key
+    apikey: cfg.publicKey,           // Public API Key
     container: '#pay',
     settings: {
       payment: {

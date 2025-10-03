@@ -15,7 +15,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const body = req.body || {};
 
-    // Accept either legacy top-level appleToken OR the new nested path
     const appleToken =
       body?.payment_method?.applepay?.token ?? body?.appleToken;
 
@@ -38,6 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: "Missing/invalid amount" });
     }
 
+    // Building out the Request Body
     const basysBody = {
       type,
       amount,
