@@ -65,7 +65,6 @@
           applePay: {
             // your Apple Pay Key ID from IQPro
             key: cfg.keyId,
-
             // Tokenizer will send the Apple authorization event to backend.
             // Inside applePay.settings.payment.applePay.autoPay
             autoPay: (authorizationEvent) => {
