@@ -17,7 +17,7 @@ export default async function handler(req: any, res: any) {
     const IQPRO_API_URL = process.env.IQPRO_API_URL!;
     const IQPRO_API_KEY = process.env.IQPRO_API_KEY!;
     const KEY_ID = process.env.APPLEPAY_KEY_ID!;
-    const DOMAIN = process.env.APPLEPAY_DOMAIN!; // your verified domain
+    const DOMAIN = process.env.APPLEPAY_DOMAIN!;
 
     const { ValidationUrl } = req.body || {};
     if (!ValidationUrl) {
@@ -33,6 +33,8 @@ export default async function handler(req: any, res: any) {
       DomainName: DOMAIN,
       ValidationUrl,                 // e.g. https://apple-pay-gateway.apple.com/paymentservices/startSession
     };
+
+    console.log("Forwarding Apple Pay merchant validation request to IQPro", forwardBody);
 
     const r = await fetch(`${IQPRO_API_URL}/api/public/applepay/validatemerchant`, {
       method: "POST",
