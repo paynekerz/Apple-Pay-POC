@@ -34,7 +34,8 @@ export default async function handler(req: any, res: any) {
       ValidationUrl,                 // e.g. https://apple-pay-gateway.apple.com/paymentservices/startSession
     };
 
-    console.log("Forwarding Apple Pay merchant validation request to IQPro", forwardBody);
+    console.log("=== Forward Body Being Sent to IQPro ===");
+    console.log(JSON.stringify(forwardBody, null, 2));
 
     const r = await fetch(`${IQPRO_API_URL}/api/public/applepay/validatemerchant`, {
       method: "POST",
