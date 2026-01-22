@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
@@ -10,6 +10,5 @@
     "types": ["node", "@vercel/node"]
   },
   "include": ["api/**/*.ts", "**/*.ts"],
-  "exclude": ["node_modules"],
-  
+  "exclude": ["node_modules"]
 }
