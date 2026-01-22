@@ -102,6 +102,18 @@
                 : null;
 
               console.log(appleToken);
+              let body = SON.stringify({
+                  type: "sale",
+                  amount: amountCents,
+                  currency: "USD",
+                  payment_method: {
+                    applepay: {
+                      key: cfg.keyId,
+                      token: appleToken,
+                    },
+                  },
+                });
+              console.log(body);
 
               return fetch("/api/transaction", {
                 method: "POST",
