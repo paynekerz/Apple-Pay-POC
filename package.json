@@ -10,7 +10,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^24.10.9",
-    "@vercel/node": "^5.3.24",
+    "@vercel/node": "^5.5.26",
     "typescript": "^5.9.3"
   }
 }
