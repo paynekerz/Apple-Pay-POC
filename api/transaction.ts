@@ -68,6 +68,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     };
 
+    console.log("=== BASYS Request Body ===");
+    console.log(JSON.stringify(basysBody, null, 2));
+
     const r = await fetch(BASYS_URL, {
       method: "POST",
       headers: {
